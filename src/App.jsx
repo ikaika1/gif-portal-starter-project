@@ -1,6 +1,30 @@
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
 import React, { useEffect, useState } from 'react';
 import twitterLogo from './assets/twitter-logo.svg';
 import './App.css';
+import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
+import {
+  Program, AnchorProvider, web3
+} from '@project-serum/anchor';
+
+// SystemProgram is a reference to the Solana runtime!
+const { SystemProgram, Keypair } = web3;
+
+// Create a keypair for the account that will hold the GIF data.
+let baseAccount = Keypair.generate();
+
+// This is the address of your solana program, if you forgot, just run solana address -k target/deploy/myepicproject-keypair.json
+const programID = new PublicKey("5GLzNedGohBMd2w3J2obBkfBdTbtEtYukb6VhgMCZBCY");
+
+// Set our network to devnet.
+const network = clusterApiUrl('devnet');
+
+// Controls how we want to acknowledge when a transaction is "done".
+const opts = {
+  preflightCommitment: "processed"
+}
+
 
 // Constants
 const TWITTER_HANDLE = '_buildspace';
@@ -47,6 +71,13 @@ const [gifList, setGifList] = useState([]);
   }
 };
   const onInputChange = (event) => {
+  const getProvider = () => {
+  const connection = new Connection(network, opts.preflightCommitment);
+  const provider = new AnchorProvider(
+    connection, window.solana, opts.preflightCommitment,
+  );
+  return provider;
+}
   const { value } = event.target;
   setInputValue(value);
 };
@@ -111,14 +142,13 @@ const [gifList, setGifList] = useState([]);
 useEffect(() => {
   if (walletAddress) {
     console.log('Fetching GIF list...');
-    
-    // Call Solana program here.
+
+    // Call Solana Program
 
     // Set state
     setGifList(TEST_GIFS);
   }
 }, [walletAddress]);
-
 
 
   
